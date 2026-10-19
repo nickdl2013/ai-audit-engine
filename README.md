@@ -373,7 +373,7 @@ Docker 化建议：应用镜像 + 独立的模型服务镜像，两者通过内�
 
 ## 许可证
 
-[Apache License 2.0](LICENSE) © 2026 liangyl
+[Apache License 2.0](LICENSE) © 2026 nickdl2013
 
 **你可以**：商用、修改、分发、私有化部署，包括作为闭源产品的一部分，
 无需公开你的修改。这不是 copyleft 协议。
