@@ -1,0 +1,135 @@
+# ============================================================
+#  HR 入职材料审核规则库
+#  ----------------------------------------------------------
+#  与费用域规则库结构完全一致：规则改这里，不用改代码、不用发版。
+#  evaluator 前缀决定执行方式：
+#    builtin:hr_*  -> 确定性校验，用 Python 代码算，结果 100% 可复现
+#    llm:semantic  -> 语义校验，交给大模型判断，必须带依据引用
+#
+#  ★ 给 HR 看的一句话：下面 params 里的数字（90 天、30 天、清单内容）
+#    全部是各公司自己的制度口径，改这里就行，不需要开发参与。
+# ============================================================
+
+version: "2026.10.hr.1"
+
+org:
+  name: "示例科技有限公司"
+  hr_unit: "人力资源共享服务中心"
+
+rules:
+
+  # ---------------- 材料完整性：确定性校验 ----------------
+
+  - id: HR-001
+    name: 必备材料齐全性
+    category: 材料完整性
+    severity: high
+    scope: report
+    evaluator: "builtin:hr_required_docs"
+    basis: "《员工入职管理办法》第 3.1 条：员工办理入职须提交身份证、学历证明、离职证明、体检报告、银行卡及已签署的劳动合同；材料不齐的，不得办理入职手续。第 3.4 条：应届毕业生无前雇主，免提交离职证明。"
+    description: "按用工形式核对应提交的必备材料清单，缺失且无制度豁免的即为不合规。"
+    params:
+      # 不同用工形式的必备清单不同 —— 这是最容易做错的一步
+      required_by_type:
+        全职: [身份证, 学历证书, 离职证明, 体检报告, 银行卡, 劳动合同]
+        实习: [身份证, 学生证, 实习协议, 银行卡]
+        外包: [身份证, 银行卡]
+        劳务: [身份证, 银行卡, 劳务协议]
+      # 豁免条款：满足条件时该项不再要求
+      exempt_rules:
+        - doc_type: 离职证明
+          when_field: is_fresh_graduate
+          when_value: true
+          note: 应届毕业生免提交离职证明
+
+  # ---------------- 日期与时效：确定性校验 ----------------
+
+  - id: HR-002
+    name: 证件有效期覆盖入职日
+    category: 材料时效
+    severity: high
+    scope: item
+    evaluator: "builtin:hr_doc_expiry"
+    basis: "《员工入职管理办法》第 3.6 条：身份证等有效身份证件在办理入职时剩余有效期不得少于 30 日，否则须先换领。"
+    description: "证件有效期必须覆盖入职日并留足缓冲期。"
+    params:
+      min_valid_days: 30
+      # 哪些材料必须有有效期字段。没有就不产出结论，避免噪音
+      expiry_required_types: [身份证]
+
+  - id: HR-003
+    name: 材料出具日期时效
+    category: 材料时效
+    severity: high
+    scope: item
+    evaluator: "builtin:hr_issue_date_window"
+    basis: "《员工入职管理办法》第 3.5 条：入职体检报告须为入职前 90 日内出具；离职证明的出具日期不得晚于入职日，否则存在未解除前一段劳动关系的风险。"
+    description: "体检报告须在入职前 90 日内出具；离职证明不得晚于入职日出具。"
+    params:
+      windows:
+        体检报告:
+          max_days_before_onboard: 90
+        离职证明:
+          must_before_onboard: true
+
+  - id: HR-004
+    name: offer 与入职日期逻辑
+    category: 流程合规
+    severity: medium
+    scope: report
+    evaluator: "builtin:hr_date_logic"
+    basis: "《招聘与录用管理办法》第 5.2 条：拟入职日期不得早于 offer 发出日期。"
+    description: "拟入职日期不得早于 offer 日期，且必须填写。"
+    params: {}
+
+  # ---------------- 主体一致性：确定性校验 ----------------
+
+  - id: HR-005
+    name: 材料持有人姓名一致性
+    category: 主体一致性
+    severity: high
+    scope: item
+    evaluator: "builtin:hr_name_consistency"
+    basis: "《员工入职管理办法》第 3.3 条：所提交材料上的姓名须与候选人登记姓名一致，不得代交、错交他人材料。"
+    description: "所有带姓名的材料，其持有人姓名必须与候选人姓名一致。"
+    params: {}
+
+  - id: HR-006
+    name: 材料证件号码一致性
+    category: 主体一致性
+    severity: high
+    scope: item
+    evaluator: "builtin:hr_id_consistency"
+    basis: "《员工入职管理办法》第 3.3 条：所提交材料上的证件号码须与候选人登记的身份证号一致。"
+    description: "材料上的证件号必须与登记身份证号一致，用于防范冒名顶替。"
+    params: {}
+
+  # ---------------- 语义类：交给大模型 ----------------
+  # 这三条规则引擎算不出来，也是整套系统的差异化价值所在。
+
+  - id: SEM-HR-001
+    name: 材料构成与用工形式适配性
+    category: 语义审核
+    severity: medium
+    scope: report
+    evaluator: "llm:semantic"
+    basis: "《招聘与录用管理办法》第 4.3 条：不同用工形式对应不同的劳动合同类型与材料要求，不得混用。"
+    description: "判断所提交材料类型与用工形式（全职 / 实习 / 外包 / 劳务）是否匹配。例如实习岗位应签署实习协议而非劳动合同；外包人员的劳动合同主体应为服务商。若材料与用工形式存在明显错配，判 warn 并说明后果。"
+
+  - id: SEM-HR-002
+    name: 备注中的证据瑕疵与风险信号
+    category: 语义审核
+    severity: high
+    scope: report
+    evaluator: "llm:semantic"
+    basis: "《员工入职管理办法》第 3.8 条：入职材料须提交原件核验；确因客观原因只能提供复印件的，须提交书面说明并留存核验记录。"
+    description: "扫描材料备注字段，识别证据效力不足或存在风险的表述，例如'仅提供复印件''原件未交''待补''待签字''待盖章''口头承诺''影像不清晰'等。命中则判 warn，并说明该表述为什么会影响材料效力。"
+
+  - id: SEM-HR-003
+    name: 候选人信息内部一致性
+    category: 语义审核
+    severity: medium
+    scope: report
+    evaluator: "llm:semantic"
+    basis: "《招聘与录用管理办法》第 4.1 条：候选人自报信息应与所提交材料相互印证，存在矛盾的须核实后再办理入职。"
+    description: "判断候选人自报信息与材料之间是否存在矛盾。例如标记为应届毕业生却填报多年工作年限；岗位职级与最高学历明显不相称；入职日期与工作经历时间线冲突。存在矛盾则判 warn 并引用具体字段。"

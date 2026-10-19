@@ -1,0 +1,62 @@
+{
+  "record_id": "RZ-2026-1102-041",
+  "candidate_name": "周雨桐",
+  "id_no": "330106200203145621",
+  "department": "市场部",
+  "position": "管培生",
+  "employment_type": "全职",
+  "offer_date": "2026-10-15",
+  "onboard_date": "2026-11-02",
+  "is_fresh_graduate": true,
+  "work_years": 0,
+  "highest_degree": "本科",
+  "docs": [
+    {
+      "doc_id": "DOC-101",
+      "doc_type": "身份证",
+      "submitted": true,
+      "holder_name": "周雨桐",
+      "holder_id_no": "330106200203145621",
+      "issue_date": "2021-08-20",
+      "expiry_date": "2031-08-20",
+      "issuer": "杭州市公安局",
+      "description": "原件已核验，扫描件留存归档"
+    },
+    {
+      "doc_id": "DOC-102",
+      "doc_type": "学历证书",
+      "submitted": true,
+      "holder_name": "周雨桐",
+      "holder_id_no": "330106200203145621",
+      "issue_date": "2026-06-30",
+      "issuer": "某大学",
+      "description": "毕业证书与学位证书各一份"
+    },
+    {
+      "doc_id": "DOC-103",
+      "doc_type": "体检报告",
+      "submitted": true,
+      "holder_name": "周雨桐",
+      "issue_date": "2026-10-10",
+      "issuer": "某体检中心",
+      "description": "入职体检报告，结论合格"
+    },
+    {
+      "doc_id": "DOC-104",
+      "doc_type": "银行卡",
+      "submitted": true,
+      "holder_name": "周雨桐",
+      "issuer": "某银行",
+      "description": "工资卡，已核验持卡人身份"
+    },
+    {
+      "doc_id": "DOC-105",
+      "doc_type": "劳动合同",
+      "submitted": true,
+      "holder_name": "周雨桐",
+      "holder_id_no": "330106200203145621",
+      "issuer": "示例科技有限公司",
+      "description": "双方已签署完毕，原件归档"
+    }
+  ]
+}

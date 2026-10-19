@@ -1,0 +1,70 @@
+{
+  "record_id": "RZ-2026-1105-052",
+  "candidate_name": "王皓",
+  "id_no": "440305199510208834",
+  "department": "研发中心",
+  "position": "后端开发工程师",
+  "employment_type": "全职",
+  "offer_date": "2026-10-22",
+  "onboard_date": "2026-11-05",
+  "is_fresh_graduate": false,
+  "work_years": 6,
+  "highest_degree": "本科",
+  "docs": [
+    {
+      "doc_id": "DOC-201",
+      "doc_type": "身份证",
+      "submitted": true,
+      "holder_name": "王皓",
+      "holder_id_no": "440305199510208834",
+      "issue_date": "2019-11-06",
+      "expiry_date": "2029-11-06",
+      "issuer": "深圳市公安局",
+      "description": "原件已核验"
+    },
+    {
+      "doc_id": "DOC-202",
+      "doc_type": "学历证书",
+      "submitted": true,
+      "holder_name": "王皓",
+      "holder_id_no": "440305199510208834",
+      "issue_date": "2017-06-30",
+      "issuer": "某大学",
+      "description": "毕业证书，原件已核验"
+    },
+    {
+      "doc_id": "DOC-203",
+      "doc_type": "离职证明",
+      "submitted": true,
+      "holder_name": "王皓",
+      "issue_date": "2026-10-25",
+      "issuer": "上家公司",
+      "description": "已加盖前雇主公章，原件归档"
+    },
+    {
+      "doc_id": "DOC-204",
+      "doc_type": "体检报告",
+      "submitted": true,
+      "holder_name": "王皓",
+      "issuer": "某体检中心",
+      "description": "体检中心系统导出，报告日期待人事录入"
+    },
+    {
+      "doc_id": "DOC-205",
+      "doc_type": "银行卡",
+      "submitted": true,
+      "holder_name": "王皓",
+      "issuer": "某银行",
+      "description": "工资卡，已核验"
+    },
+    {
+      "doc_id": "DOC-206",
+      "doc_type": "劳动合同",
+      "submitted": true,
+      "holder_name": "王皓",
+      "holder_id_no": "440305199510208834",
+      "issuer": "示例科技有限公司",
+      "description": "双方已签署，人事部已用印"
+    }
+  ]
+}

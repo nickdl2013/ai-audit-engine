@@ -1,0 +1,87 @@
+{
+  "report_id": "BX-2026-10-0013",
+  "applicant": "李娜",
+  "department": "售前支持部",
+  "trip_start": "2026-10-09",
+  "trip_end": "2026-10-10",
+  "budget_code": "DEPT-PRESALE-2026-Q4",
+  "items": [
+    {
+      "item_id": "IT-101",
+      "category": "住宿费",
+      "amount": 760.00,
+      "date": "2026-10-09",
+      "city": "杭州",
+      "nights": 2,
+      "description": "10月9日至10日杭州客户技术交流期间住宿",
+      "vendor": "杭州西湖某商务酒店",
+      "invoice_no": "3300241130-0101",
+      "invoice_title": "示例科技有限公司",
+      "invoice_tax_no": "91310000MA1FLXXXXX",
+      "has_preapproval": true
+    },
+    {
+      "item_id": "IT-102",
+      "category": "城市间交通费",
+      "amount": 980.00,
+      "date": "2026-10-09",
+      "city": "杭州",
+      "description": "上海至杭州往返高铁二等座",
+      "vendor": "中国铁路",
+      "invoice_no": "3300241130-0102",
+      "invoice_title": "示例科技有限公司",
+      "invoice_tax_no": "91310000MA1FLXXXXX",
+      "has_preapproval": true
+    },
+    {
+      "item_id": "IT-103",
+      "category": "市内交通费",
+      "amount": 120.00,
+      "date": "2026-10-09",
+      "city": "杭州",
+      "description": "高铁站至客户园区打车",
+      "vendor": "杭州市出租车",
+      "invoice_no": "3300241130-0103",
+      "invoice_title": "示例科技有限公司",
+      "invoice_tax_no": "91310000MA1FLXXXXX"
+    },
+    {
+      "item_id": "IT-104",
+      "category": "市内交通费",
+      "amount": 90.00,
+      "date": "2026-10-10",
+      "city": "杭州",
+      "description": "客户园区至高铁站打车",
+      "vendor": "网约车平台",
+      "invoice_no": "3300241130-0104",
+      "invoice_title": "示例科技有限公司",
+      "invoice_tax_no": "91310000MA1FLXXXXX"
+    },
+    {
+      "item_id": "IT-105",
+      "category": "招待费",
+      "amount": 800.00,
+      "date": "2026-10-09",
+      "city": "杭州",
+      "attendees": ["李娜", "陈涛", "客户方张总", "客户方刘经理", "客户方王工"],
+      "description": "杭州客户商务宴请",
+      "vendor": "杭州某杭帮菜馆",
+      "invoice_no": "3300241130-0105",
+      "invoice_title": "示例科技有限公司",
+      "invoice_tax_no": "91310000MA1FLXXXXX",
+      "has_preapproval": true
+    },
+    {
+      "item_id": "IT-106",
+      "category": "办公用品",
+      "amount": 260.00,
+      "date": "2026-10-10",
+      "city": "杭州",
+      "description": "客户交流资料打印及装订",
+      "vendor": "杭州某图文快印店",
+      "invoice_no": "3300241130-0106",
+      "invoice_title": "示例科技有限公司",
+      "invoice_tax_no": "91310000MA1FLXXXXX"
+    }
+  ]
+}

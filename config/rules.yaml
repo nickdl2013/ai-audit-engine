@@ -1,0 +1,161 @@
+# ============================================================
+#  费控审核规则库
+#  ----------------------------------------------------------
+#  设计要点：规则改这里，不用改代码、不用发版。
+#  evaluator 前缀决定执行方式：
+#    builtin:*  -> 确定性校验，用 Python 代码算，结果 100% 可复现
+#    llm:semantic -> 语义校验，交给大模型判断，必须带依据引用
+#
+#  能算准的绝不交给模型。这是让财务敢用这套系统的前提。
+# ============================================================
+
+version: "2026.10.1"
+
+# 公司主体信息，供发票合规类规则使用
+company:
+  name: "示例科技有限公司"
+  tax_no: "91310000MA1FLXXXXX"
+
+rules:
+
+  # ---------------- 差旅类：确定性校验 ----------------
+
+  - id: TRV-001
+    name: 住宿费标准
+    category: 差旅费
+    severity: high
+    scope: item
+    evaluator: "builtin:amount_limit"
+    basis: "《员工差旅费用管理办法》第 4.2 条：住宿费按出差城市等级执行每晚限额，超支部分由个人承担。"
+    description: "住宿费不得超过出差地对应城市等级的每晚限额。"
+    applies_to_categories: [住宿费]
+    params:
+      mode: per_night          # 按晚数折算人均
+      city_tier_map:
+        一线: [北京, 上海, 广州, 深圳]
+        二线: [杭州, 南京, 成都, 武汉, 西安, 苏州, 天津, 重庆, 长沙, 青岛]
+      limits:
+        一线: 600
+        二线: 400
+        其他: 300
+
+  - id: TRV-002
+    name: 城市间交通费限额
+    category: 差旅费
+    severity: medium
+    scope: item
+    evaluator: "builtin:amount_limit"
+    basis: "《员工差旅费用管理办法》第 4.5 条：城市间交通费单程不得超过 1500 元，超出需事前审批。"
+    description: "单笔城市间交通费不得超过 1500 元。"
+    applies_to_categories: [城市间交通费]
+    params:
+      mode: per_item
+      limit: 1500
+
+  - id: TRV-003
+    name: 市内交通费日累计限额
+    category: 差旅费
+    severity: medium
+    scope: item
+    evaluator: "builtin:amount_limit"
+    basis: "《员工差旅费用管理办法》第 4.6 条：市内交通费按出差期间每日累计不超过 300 元控制。"
+    description: "同一出差日内市内交通费累计不得超过 300 元。"
+    applies_to_categories: [市内交通费]
+    params:
+      mode: per_day
+      limit: 300
+
+  - id: TRV-004
+    name: 消费日期须在出差行程区间内
+    category: 差旅费
+    severity: high
+    scope: item
+    evaluator: "builtin:trip_date_range"
+    basis: "《员工差旅费用管理办法》第 4.1 条：差旅费用发生日期须在审批的出差行程区间内。"
+    description: "单据消费日期必须落在申请单填写的出差起止日期内。"
+    applies_to_categories: [住宿费, 城市间交通费, 市内交通费]
+    params:
+      tolerance_days: 0
+
+  # ---------------- 票据合规类：确定性校验 ----------------
+
+  - id: FIN-001
+    name: 发票抬头与税号一致性
+    category: 票据合规
+    severity: high
+    scope: item
+    evaluator: "builtin:invoice_header"
+    basis: "《费用报销票据管理规定》第 2.3 条：发票抬头须为公司全称，纳税人识别号须与公司一致，否则不予报销。"
+    description: "发票抬头与纳税人识别号必须与公司主体信息完全一致。"
+    params:
+      company:
+        name: "示例科技有限公司"
+        tax_no: "91310000MA1FLXXXXX"
+
+  - id: FIN-002
+    name: 发票号重复校验
+    category: 票据合规
+    severity: high
+    scope: report             # 需要看整张单据，属于单据级规则
+    evaluator: "builtin:duplicate_invoice"
+    basis: "《费用报销票据管理规定》第 2.7 条：同一张发票不得重复报销。"
+    description: "同一发票号在同一张报销单中出现多次即为重复报销。"
+    params: {}
+
+  # ---------------- 招待费类 ----------------
+
+  - id: ENT-001
+    name: 招待费人均标准
+    category: 招待费
+    severity: high
+    scope: item
+    evaluator: "builtin:amount_limit"
+    basis: "《业务招待费管理办法》第 3.2 条：业务招待费人均不得超过 200 元。"
+    description: "业务招待费按参与人数折算，人均不得超过 200 元。"
+    applies_to_categories: [招待费]
+    params:
+      mode: per_person
+      limit: 200
+
+  - id: ENT-002
+    name: 招待费须注明招待对象
+    category: 招待费
+    severity: medium
+    scope: item
+    evaluator: "builtin:require_field"
+    basis: "《业务招待费管理办法》第 3.4 条：报销业务招待费须在事由中注明招待对象及事由。"
+    description: "招待费必须填写参与人员名单。"
+    applies_to_categories: [招待费]
+    params:
+      fields: [attendees]
+      min_text_length: 6
+
+  # ---------------- 语义类：交给大模型 ----------------
+  # 这三条是规则引擎算不出来的，也是你的差异化价值所在。
+
+  - id: SEM-001
+    name: 事由与费用类型语义一致性
+    category: 语义审核
+    severity: medium
+    scope: report
+    evaluator: "llm:semantic"
+    basis: "《费用报销票据管理规定》第 1.5 条：报销事由须真实、准确反映费用性质，费用类型与事由描述须一致。"
+    description: "判断每条明细的事由描述与所选费用类型是否语义一致。若事由过于笼统（如仅写'费用'、'报销'）而金额较大，应判 uncertain。"
+
+  - id: SEM-002
+    name: 疑似拆单或异常重复消费
+    category: 语义审核
+    severity: high
+    scope: report
+    evaluator: "llm:semantic"
+    basis: "《员工差旅费用管理办法》第 6.1 条：严禁将同一笔费用拆分为多张单据以规避审批限额。"
+    description: "综合整张单据判断是否存在拆单嫌疑：同一供应商、同一日期、金额接近或略低于限额的多笔消费；或同日同类别多笔小额消费合计显著超限。"
+
+  - id: SEM-003
+    name: 费用是否属于可报销范围
+    category: 语义审核
+    severity: high
+    scope: report
+    evaluator: "llm:semantic"
+    basis: "《费用报销票据管理规定》第 1.2 条：个人消费、罚款、滞纳金、礼品卡充值等非公司经营性支出不得报销。"
+    description: "判断是否存在明显属于个人消费或明令禁止报销的支出（如个人会员充值、罚款、私人娱乐、家庭用品等）。"

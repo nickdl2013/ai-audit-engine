@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR 入职材料智能审核 · 演示</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: #F7F7F5; color: #1F1F1F;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size: 14px; line-height: 1.6;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 6px; }
+  .sub { font-size: 13px; color: #6B6B68; margin: 0; }
+  .meta { font-size: 12px; color: #8A8A85; margin-top: 8px; }
+  .meta code { background: #EDECE7; padding: 1px 6px; border-radius: 4px; }
+  .nav { font-size: 12.5px; margin-bottom: 14px; }
+  .nav a { color: #185FA5; text-decoration: none; }
+  .nav a:hover { text-decoration: underline; }
+  .cols { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+  .panel { background: #fff; border: 1px solid #E3E2DD; border-radius: 12px; padding: 16px; }
+  .panel h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
+  textarea {
+    width: 100%; height: 460px; resize: vertical;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.55;
+    border: 1px solid #E3E2DD; border-radius: 8px; padding: 10px;
+    background: #FCFCFB; color: #2C2C2A;
+  }
+  .row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button {
+    font: inherit; font-size: 13px; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid #D3D1C7; background: #fff; color: #2C2C2A; transition: background .15s;
+  }
+  button:hover { background: #F1EFE8; }
+  button.primary { background: #185FA5; border-color: #185FA5; color: #fff; }
+  button.primary:hover { background: #0C447C; }
+  button:disabled { opacity: .55; cursor: default; }
+  .decision { border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .decision .tag { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+  .decision .sum { font-size: 13px; line-height: 1.65; }
+  .d-approve { background: #EAF3DE; color: #27500A; }
+  .d-manual { background: #FAEEDA; color: #633806; }
+  .d-reject { background: #FCEBEB; color: #791F1F; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .stat { background: #F1EFE8; border-radius: 8px; padding: 10px 12px; }
+  .stat .k { font-size: 11px; color: #8A8A85; }
+  .stat .v { font-size: 16px; font-weight: 600; }
+  .verdict { border: 1px solid #E3E2DD; border-left-width: 3px; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+  .verdict.fail { border-left-color: #A32D2D; background: #FDF7F7; }
+  .verdict.warn { border-left-color: #BA7517; background: #FEFBF4; }
+  .verdict.uncertain { border-left-color: #888780; background: #FAFAF8; }
+  .verdict.pass { border-left-color: #639922; background: #FBFDF7; }
+  .verdict .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .verdict .rid { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #6B6B68; }
+  .verdict .name { font-weight: 600; font-size: 13px; }
+  .pill { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: #EDECE7; color: #5F5E5A; }
+  .pill.high { background: #FCEBEB; color: #A32D2D; }
+  .pill.medium { background: #FAEEDA; color: #854F0B; }
+  .pill.low { background: #F1EFE8; color: #5F5E5A; }
+  .verdict p { margin: 0 0 5px; font-size: 13px; }
+  .verdict .lbl { color: #8A8A85; }
+  .verdict .ev { color: #444441; font-size: 12.5px; }
+  .verdict .bs { color: #6B6B68; font-size: 12px; font-style: italic; }
+  .empty { color: #A0A09B; font-size: 13px; padding: 40px 0; text-align: center; }
+  .err { background: #FCEBEB; color: #A32D2D; padding: 12px 14px; border-radius: 8px; font-size: 13px; }
+  .loading { color: #185FA5; font-size: 13px; padding: 20px 0; text-align: center; }
+  details { margin-top: 12px; }
+  details summary { cursor: pointer; font-size: 12.5px; color: #185FA5; }
+  .rules { font-size: 12px; color: #5F5E5A; margin-top: 8px; max-height: 240px; overflow: auto; }
+  .rules div { padding: 4px 0; border-bottom: 1px solid #F1EFE8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav"><a href="/">← 费用审核演示</a>　|　当前：HR 入职材料审核</div>
+  <header>
+    <h1>HR 入职材料智能审核</h1>
+    <p class="sub">材料齐全性、时效、证件号由代码算准；用工形式适配、证据瑕疵、信息矛盾交给大模型——每条结论都带依据，可追溯、可申诉</p>
+    <p class="meta" id="meta">正在读取服务状态…</p>
+  </header>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>入职材料包数据</h2>
+      <textarea id="input" spellcheck="false"></textarea>
+      <div class="row">
+        <button class="primary" id="run">开始审核</button>
+        <button data-sample="onboarding.json">载入样例 · 问题件</button>
+        <button data-sample="onboarding_clean.json">载入样例 · 全合规</button>
+        <button data-sample="onboarding_review.json">载入样例 · 转人工</button>
+      </div>
+      <details>
+        <summary>查看当前生效的 HR 规则（改规则不用改代码）</summary>
+        <div class="rules" id="rules">加载中…</div>
+      </details>
+    </div>
+
+    <div class="panel">
+      <h2>审核结果</h2>
+      <div id="result"><div class="empty">点击「开始审核」查看结果</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const DECISION_TEXT = { APPROVE: "可办理入职", MANUAL_REVIEW: "转 HR 人工复核", REJECT: "退回补正" };
+const RESULT_TEXT = { fail: "不通过", warn: "预警", uncertain: "待确认", pass: "通过", skipped: "已跳过" };
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+async function loadMeta() {
+  try {
+    const r = await fetch("/health");
+    const d = await r.json();
+    const llm = d.llm || {};
+    $("meta").innerHTML = `模型 <code>${esc(llm.model)}</code>` +
+      (llm.mock ? "　<span style=\"color:#854F0B\">mock 模拟模式（换成 deepseek / qwen / ollama 即为真实调用）</span>" : "");
+  } catch (e) {
+    $("meta").textContent = "无法连接服务";
+  }
+}
+
+async function loadRules() {
+  try {
+    const r = await fetch("/hr/rules");
+    const d = await r.json();
+    $("rules").innerHTML =
+      `<div><strong>规则版本 ${esc(d.version)}｜共 ${d.count} 条</strong></div>` +
+      (d.rules || []).map((x) =>
+        `<div><strong>${esc(x.id)}</strong> ${esc(x.name)}　<span style="color:#8A8A85">[${esc(x.severity)}]</span> <code>${esc(x.evaluator)}</code></div>`
+      ).join("");
+  } catch (e) {
+    $("rules").textContent = "规则读取失败：" + e.message;
+  }
+}
+
+async function loadSample(name) {
+  try {
+    const r = await fetch("/samples/" + name);
+    const text = await r.text();
+    $("input").value = JSON.stringify(JSON.parse(text), null, 2);
+  } catch (e) {
+    $("input").value = "// 读取样例失败：" + e.message;
+  }
+}
+
+function renderStats(d) {
+  const counts = { fail: 0, warn: 0, uncertain: 0, pass: 0 };
+  (d.verdicts || []).forEach((v) => { if (counts[v.result] !== undefined) counts[v.result]++; });
+  const items = [
+    ["材料份数", d.submitted_count + " / " + d.doc_count],
+    ["用工形式", d.employment_type],
+    ["拟入职", d.onboard_date || "-"],
+    ["不通过", counts.fail],
+    ["预警", counts.warn],
+    ["待确认", counts.uncertain],
+    ["耗时", d.elapsed_ms + " ms"],
+  ];
+  return `<div class="stats">${items.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join("")}</div>`;
+}
+
+function renderVerdict(v) {
+  const ev = v.evidence ? `<p class="lbl">证据</p><p class="ev">${esc(v.evidence)}</p>` : "";
+  const bs = v.basis ? `<p class="bs">依据：${esc(v.basis)}</p>` : "";
+  return `<div class="verdict ${esc(v.result)}">
+    <div class="top">
+      <span class="pill ${esc(v.severity)}">${esc(v.severity.toUpperCase())}</span>
+      <span class="rid">${esc(v.rule_id)}</span>
+      <span class="name">${esc(v.rule_name)}</span>
+      <span class="pill">${RESULT_TEXT[v.result] || v.result}</span>
+      <span class="pill">置信度 ${Number(v.confidence).toFixed(2)}</span>
+      <span class="pill">${v.source === "llm" ? "语义审核" : "规则计算"}</span>
+    </div>
+    <p>${esc(v.reason)}</p>
+    ${ev}${bs}
+  </div>`;
+}
+
+function render(d) {
+  const cls = d.decision === "APPROVE" ? "d-approve" : d.decision === "REJECT" ? "d-reject" : "d-manual";
+  $("result").innerHTML = `
+    <div class="decision ${cls}">
+      <div class="tag">${DECISION_TEXT[d.decision] || d.decision}</div>
+      <div class="sum">${esc(d.summary)}</div>
+    </div>
+    ${renderStats(d)}
+    ${(d.verdicts || []).map(renderVerdict).join("")}
+  `;
+}
+
+async function run() {
+  let payload;
+  try {
+    payload = JSON.parse($("input").value);
+  } catch (e) {
+    $("result").innerHTML = `<div class="err">JSON 格式错误：${esc(e.message)}</div>`;
+    return;
+  }
+  const btn = $("run");
+  btn.disabled = true;
+  $("result").innerHTML = '<div class="loading">审核中，正在核对材料齐全性、时效与一致性…</div>';
+  try {
+    const r = await fetch("/hr/audit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      $("result").innerHTML = `<div class="err">服务返回 ${r.status}：${esc(t.slice(0, 400))}</div>`;
+      return;
+    }
+    render(await r.json());
+  } catch (e) {
+    $("result").innerHTML = `<div class="err">请求失败：${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$("run").addEventListener("click", run);
+document.querySelectorAll("button[data-sample]").forEach((b) => {
+  b.addEventListener("click", () => loadSample(b.getAttribute("data-sample")));
+});
+loadMeta();
+loadRules();
+loadSample("onboarding.json");
+</script>
+</body>
+</html>

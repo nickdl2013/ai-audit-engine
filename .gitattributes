@@ -1,0 +1,6 @@
+# 统一换行，避免 Windows 提交后 GitHub 上整篇显示为改动
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary
